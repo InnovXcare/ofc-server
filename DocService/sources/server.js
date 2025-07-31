@@ -184,7 +184,9 @@ docsCoServer.install(server, () => {
 		{inflate: true, limit: config.get('services.CoAuthoring.server.limits_tempfile_upload'), type: function() {return true;}});
 	const urleEcodedParser = bodyParser.urlencoded({ extended: false });
 	let forms = multer();
-
+	app.get('/test-url', (req, res) => {
+		res.send('okay111');
+	});
 	app.get('/coauthoring/CommandService.ashx', utils.checkClientIp, rawFileParser, docsCoServer.commandFromServer);
 	app.post('/coauthoring/CommandService.ashx', utils.checkClientIp, rawFileParser, docsCoServer.commandFromServer);
 	app.post('/command', utils.checkClientIp, rawFileParser, docsCoServer.commandFromServer);
