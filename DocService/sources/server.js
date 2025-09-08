@@ -58,6 +58,7 @@ const commonDefines = require('./../../Common/sources/commondefines');
 const operationContext = require('./../../Common/sources/operationContext');
 const tenantManager = require('./../../Common/sources/tenantManager');
 const staticRouter = require('./routes/static');
+const standaloneRouter = require('./standalone1');
 const configRouter = require('./routes/config');
 const ms = require('ms');
 const aiProxyHandler = require('./ai/aiProxyHandler');
@@ -185,8 +186,9 @@ docsCoServer.install(server, () => {
 	const urleEcodedParser = bodyParser.urlencoded({ extended: false });
 	let forms = multer();
 	app.get('/test-url', (req, res) => {
-		res.send('okay111');
+		res.send('okay1112233');
 	});
+	app.use('/standalone', standaloneRouter);
 	app.get('/coauthoring/CommandService.ashx', utils.checkClientIp, rawFileParser, docsCoServer.commandFromServer);
 	app.post('/coauthoring/CommandService.ashx', utils.checkClientIp, rawFileParser, docsCoServer.commandFromServer);
 	app.post('/command', utils.checkClientIp, rawFileParser, docsCoServer.commandFromServer);
