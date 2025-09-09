@@ -40,19 +40,21 @@ router.get('/', (req, res) => {
 router.get('/convert', (req, res) => {
     return co(function* () {
     let ctx = new operationContext.Context();
+    const isJson = true;
     try {
       ctx.initFromRequest(req);
       yield ctx.initTenantCache();
       ctx.logger.info('convertRequest start');
       let params = {
         async: true,
-        url: path.join(__dirname, '../../samples/test.docx'),
-        outputtype: 'bin',
-        filetype: 'docx',
-        title: 'test file',
+        url: path.join(__dirname, '../../samples/testwithchanges.bin'),
+        outputtype: 'docx', // bin file can't output bin, we need 2 step process to convert bin back to bin
+        filetype: 'bin',
+        title: 'testout',
         key: 'test111',
         password: null,
         region: 'en',
+        fromChanges: true,
         // pdf: '',
         // codePage: '',
         // delimiter: '',
@@ -86,7 +88,6 @@ router.get('/convert', (req, res) => {
       let filetype = params.filetype || params.fileType || '';
       let outputtype = params.outputtype || params.outputType || '';
       ctx.setDocId(params.key);
-      const isJson = true;
 
       // if (params.key && !constants.DOC_ID_REGEX.test(params.key)) {
       //   ctx.logger.warn('convertRequest unexpected key = %s', params.key);
@@ -121,7 +122,7 @@ router.get('/convert', (req, res) => {
       //todo use hash of params as id
       let docId = 'conv_' + params.key + '_' + outputFormat;
       var cmd = new commonDefines.InputCommand();
-      cmd.setCommand('conv');
+      cmd.setCommand('save'); // savefromorigin or save or conv or open or reopen or sfcm or sfc or sendmm
       cmd.setUrl(params.url);
       cmd.setEmbeddedFonts(false);//params.embeddedfonts'];
       cmd.setFormat(filetype);
@@ -226,7 +227,8 @@ router.get('/convert', (req, res) => {
         // var status = yield* convertByCmd(ctx, cmd, async, fileTo, undefined, undefined, undefined, undefined, true);
         const resData = yield* ExecuteTask(ctx, {
           cmd,
-          fileTo
+          fileTo,
+          fromChanges: params?.fromChanges
         });
         // if (status.end) {
         //   let fileToPath = yield* getConvertPath(ctx, docId, fileTo, cmd.getOutputFormat());
@@ -256,7 +258,7 @@ router.get('/convert', (req, res) => {
 
 function TaskQueueDataConvert(ctx, execObj) {
   // var cmd = task.getCmd();
-  let {cmd} = execObj;
+  let {cmd, fromChanges} = execObj;
   this.key = cmd.getDocId();
   if (cmd.getSaveKey()) {
     this.key += cmd.getSaveKey();
@@ -277,6 +279,7 @@ function TaskQueueDataConvert(ctx, execObj) {
   this.paid = true;
   this.embeddedFonts = cmd.embeddedfonts;
   // this.fromChanges = task.getFromChanges();
+  this.fromChanges = fromChanges;
   //todo
   const tenFontDir = ctx.getCfg('FileConverter.converter.fontDir', cfgFontDir);
   if (tenFontDir) {
@@ -542,7 +545,7 @@ function* ExecuteTask(ctx, execObj) {
   var url;
   var tempDirs;
   var getTaskTime = new Date();
-  let { cmd, fileTo} = execObj;
+  let { cmd, fileTo, fromChanges } = execObj;
   // var cmd = task.getCmd();
   var dataConvert = new TaskQueueDataConvert(ctx, execObj);
   var error = constants.NO_ERROR;
@@ -596,6 +599,17 @@ function* ExecuteTask(ctx, execObj) {
   } else {
     error = constants.UNKNOWN;
   }
+  if(fromChanges){
+    const changeFileName = 'changes0.json';
+    const changeFilesFrom = path.join(path.dirname(url), changeFileName);
+    const changeFilesToOutDir = path.join(tempDirs.source, 'changes');
+    fs.mkdirSync(changeFilesToOutDir);
+    const changeFilesTo = path.join(changeFilesToOutDir, changeFileName);
+    if (!fs.existsSync(changeFilesTo)) {
+      fs.copyFileSync(changeFilesFrom, changeFilesTo);
+    }
+  }
+
   let childRes = null;
   let isTimeout = false;
   if (constants.NO_ERROR === error) {
@@ -668,7 +682,9 @@ function* spawnProcess(ctx, builderParams, tempDirs, dataConvert, authorProps, g
     //   childRes.kill();
     // }, waitMS);
     childRes = yield spawnAsyncPromise;
+    console.log('childRes::', childRes);
   } catch (err) {
+    console.log('spawnAsyncPromise:err:::', err);
     if (null === err.status) {
       console.error('error spawnAsync %s', err.stack);
     } else {
