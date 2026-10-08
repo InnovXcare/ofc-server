@@ -28,7 +28,7 @@
         "node-cache": "5.1.2",
         "node-statsd": "0.1.1",
         "nodemailer": "9.1.1",
-        "request-filtering-agent": "2.0.1",
+        "request-filtering-agent": "3.2.1",
         "rhea": "3.0.3",
         "uri-js-replace": "1.0.1",
         "win-ca": "3.5.1"
@@ -7234,12 +7234,15 @@
       "integrity": "sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ=="
     },
     "node_modules/request-filtering-agent": {
-      "version": "2.0.1",
-      "resolved": "https://registry.npmjs.org/request-filtering-agent/-/request-filtering-agent-2.0.1.tgz",
-      "integrity": "sha512-QvD3qwthEt9J+2hCdQ3wTn3Z/ZsgyiMECjY9yVJ0F8FtnGfNQG+dRz65eKayYRHIRQ6OGjH8Zuqr1lw7G6pz1Q==",
+      "version": "3.2.1",
+      "resolved": "https://registry.npmjs.org/request-filtering-agent/-/request-filtering-agent-3.2.1.tgz",
+      "integrity": "sha512-NUz5G9n6GRSgB9JNurHCeeJX60s+qxL/DKTPjC6+fXrQ20w7iQy+ST6h4hKjeu1AjfH7FtIV+uw5eOq4CqWe8Q==",
       "license": "MIT",
       "dependencies": {
         "ipaddr.js": "^2.1.0"
+      },
+      "engines": {
+        "node": ">=20.0.0"
       }
     },
     "node_modules/requires-port": {
